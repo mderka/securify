@@ -1,11 +1,11 @@
 package ch.securify;
 
+import ch.securify.model.SecurifyError;
+
 import java.util.HashMap;
 
 public class SolidityResult {
-    HashMap<String, SmallPatternResult> results;
+    HashMap<String, SmallPatternResult> results = new HashMap<>();
 
-    SolidityResult() {
-        results = new HashMap<>();
-    }
+    SecurifyError securifyError = null;
 }

@@ -27,6 +27,7 @@ import ch.securify.decompiler.printer.DecompilationPrinter;
 import ch.securify.model.Contract;
 import ch.securify.model.ContractResult;
 import ch.securify.model.PatternResult;
+import ch.securify.model.SecurifyError;
 import ch.securify.patterns.*;
 import ch.securify.utils.DevNullPrintStream;
 import ch.securify.utils.StreamUtil;
@@ -105,8 +106,8 @@ public class Main {
 
         HashMap<String, SolidityResult> allContractResults = new HashMap<>();
         for (Map.Entry<String, JsonElement> e : entries) {
-            log.println("Processing contract:");
-            log.println(e.getKey());
+            System.err.println("Processing contract:");
+            System.err.println(e.getKey());
 
             String bin = e.getValue().getAsJsonObject().get("bin-runtime").getAsString();
             String map = e.getValue().getAsJsonObject().get("srcmap-runtime").getAsString();
@@ -121,6 +122,11 @@ public class Main {
             byte[] fileContent = Files.readAllBytes(new File(e.getKey().split(":")[0]).toPath());
 
             SolidityResult allPatternResults = CompilationHelpers.getMappingsFromStatusFile(livestatusfile, map, fileContent);
+
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            gson.toJson(allPatternResults, System.err);
+            System.err.println();
+
             allContractResults.put(e.getKey(), allPatternResults);
         }
 
@@ -140,15 +146,15 @@ public class Main {
         updateContractAnalysisStatus(livestatusfile);
 
         List<Instruction> instructions;
+
         try {
-            // decompile
             instructions = decompileContract(bin);
-            contractResult.decompiled = true;
-        } catch (Exception e) {
-            contractResult.finished = true;
-            updateContractAnalysisStatus(livestatusfile);
+        }catch(Exception e){
+            handleSecurifyError("decompilation_error", e, livestatusfile);
             return;
         }
+
+        contractResult.decompiled = true;
 
         if (decompilationOutputFile != null) {
             new File(decompilationOutputFile).getAbsoluteFile().getParentFile().mkdirs();
@@ -161,14 +167,28 @@ public class Main {
             updateContractAnalysisStatus(livestatusfile);
         }
 
-        checkPatterns(instructions, livestatusfile);
+        try {
+            checkPatterns(instructions, livestatusfile);
+        }catch(Exception e){
+            handleSecurifyError("pattern_error", e, livestatusfile);
+            return;
+        }
+
+        finishContractResult(livestatusfile);
+    }
+
+    private static void handleSecurifyError(String errorMessage, Exception e, String livestatusfile){
+        System.err.println("Error in Securify");
+        contractResult.securifyError = new SecurifyError("decompilation_error", e);
+        finishContractResult(livestatusfile);
+    }
+
+    private static void finishContractResult(String livestatusfile){
         contractResult.finished = true;
         updateContractAnalysisStatus(livestatusfile);
-
     }
 
     public static void main(String[] rawrgs) throws IOException, InterruptedException {
-
         args = new Args();
 
         try {
@@ -243,7 +263,7 @@ public class Main {
 
     }
 
-    private static void handleContractList(List<Contract> contracts, String livestatusfile) {
+    private static void handleContractList(List<Contract> contracts, String livestatusfile) throws IOException, InterruptedException {
         log.println("contract count: " + contracts.size());
 
 
