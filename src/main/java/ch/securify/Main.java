@@ -141,7 +141,7 @@ public class Main {
 
         try {
             instructions = decompileContract(bin);
-        }catch(Exception e){
+        } catch(Exception e) {
             handleSecurifyError("decompilation_error", e);
             finishContractResult(livestatusfile);
             return;
@@ -162,7 +162,7 @@ public class Main {
 
         try {
             checkPatterns(instructions, livestatusfile);
-        }catch(Exception e){
+        } catch(Exception e) {
             handleSecurifyError("pattern_error", e);
             finishContractResult(livestatusfile);
             return;
