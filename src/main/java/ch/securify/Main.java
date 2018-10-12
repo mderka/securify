@@ -111,7 +111,7 @@ public class Main {
             String bin = e.getValue().getAsJsonObject().get("bin-runtime").getAsString();
             String map = e.getValue().getAsJsonObject().get("srcmap-runtime").getAsString();
 
-            List<String> lines = Collections.singletonList(bin);
+            List<String> lines = Arrays.asList(bin);
             File binFile = File.createTempFile("securify_binary_", ".bin.hex");
             binFile.deleteOnExit();
             Files.write(Paths.get(binFile.getPath()), lines);
@@ -171,11 +171,9 @@ public class Main {
             checkPatterns(instructions, livestatusfile);
         } catch(Exception e) {
             handleSecurifyError("pattern_error", e);
+        } finally {
             finishContractResult(livestatusfile);
-            return;
         }
-
-        finishContractResult(livestatusfile);
     }
 
     private static void handleSecurifyError(String errorMessage, Exception e){

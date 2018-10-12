@@ -22,8 +22,8 @@ import java.util.LinkedList;
 
 public class SecurifyErrors{
 
-    static class Error{
-        public String error;
+    class Error{
+        String error;
         String stackTrace;
 
         Error(String error, Exception e){
@@ -31,7 +31,7 @@ public class SecurifyErrors{
             this.stackTrace = exceptionToString(e);
         }
 
-        private static String exceptionToString(Exception e){
+        private String exceptionToString(Exception e){
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
