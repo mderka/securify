@@ -55,6 +55,10 @@ class TruffleProject(project.Project):
                 with open(entry, mode='r') as file:
                     data = json.load(file)
                     contract_name = data["sourcePath"] + ":" + data["contractName"]
+                    # check if library contract
+                    if not pathlib.Path(contract_name).is_file():
+                        contract_name = os.path.join(
+                            utils.find_node_modules_dir(self.get_project_root()), contract_name)
                     data["bin"] = data.pop("bytecode")
                     data["bin-runtime"] = data.pop("deployedBytecode")
                     data["srcmap"] = data.pop("sourceMap")
