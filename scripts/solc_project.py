@@ -29,11 +29,11 @@ from solc.wrapper import solc_wrapper
 from solc.exceptions import SolcError
 import solc.install
 
-from . import command
+from . import project
 from . import utils
 
-class SolcCommand(command.Command):
-    """A command that uses the `solc` compiler."""
+class SolcProject(project.Project):
+    """A project that uses the `solc` compiler."""
     def __init__(self, project_root):
         super().__init__(project_root)
 

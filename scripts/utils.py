@@ -18,8 +18,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import re
+import sys
 import os
+import re
+import logging
 
 from solc.exceptions import SolcError
 import solc.install
@@ -85,16 +87,41 @@ def parse_sol_version(source):
     return DEFAULT_SOLC_VERSION
 
 
-def print_warning(text):
-    print(colored(text, "yellow"))
+def handle_process_output_and_exit(process):
+    """Processes stdout and stderr from a subprocess."""
+    if process.stderr:
+        logging.info(process.stderr.decode('ascii'))
+    if process.stdout:
+        logging.info(process.stdout.decode('ascii'))
+    logging.shutdown()
+    sys.exit(1)
 
 
-def print_error(text):
-    print(colored(text, "red"))
+def log_warning(text):
+    logging.warning(colored(text, "yellow"))
 
 
-def print_confirmation(text):
-    print(colored(text, "green"))
+def log_error(text):
+    logging.error(colored(text, "red"))
+
+
+def log_confirmation(text):
+    logging.info(colored(text, "green"))
+
+
+def set_logger_level(level=None):
+    if "info":
+        level = logging.INFO
+    elif "error":
+        level = logging.ERROR
+    else:
+        level = logging.WARNING
+
+    config = { "format": "%(message)s", "level": level}
+    logging.basicConfig(**config)
+
+
+DEBUG = False
 
 COMP_VERSION1_REX = re.compile(r'0\.\d+\.\d+')
 

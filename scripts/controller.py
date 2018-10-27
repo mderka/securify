@@ -20,8 +20,9 @@ limitations under the License.
 
 import argparse
 
-from . import solc_command
-from . import truffle_command
+from . import solc_project
+from . import truffle_project
+from . import utils
 
 class Controller:
     def __init__(self):
@@ -29,12 +30,18 @@ class Controller:
         self._parser = parser = argparse.ArgumentParser(description='Run securify in docker image.')
         self._parser.add_argument('-t', '--truffle', action="store_true", help="Use truffle project as base")
         self._parser.add_argument('-p', '--project', action="store", help="The project root.", default="/project")
+        self._parser.add_argument('-v', '--verbose', action="store_true", help="Provide verbose output")
         self.args = self._parser.parse_args()
 
         if self.args.truffle:
-            self._command = truffle_command.TruffleCommand(self.args.project)
+            self._project = truffle_project.TruffleProject(self.args.project)
         else:
-            self._command = solc_command.SolcCommand(self.args.project)
+            self._project = solc_project.SolcProject(self.args.project)
+
+        if self.args.verbose:
+            utils.set_logger_level("error")
+        else:
+            utils.set_logger_level("warning")
 
     def compile_and_report(self):
-        self._command.execute()
+        self._project.execute()

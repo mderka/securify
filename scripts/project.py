@@ -25,21 +25,17 @@ import subprocess
 
 from . import utils
 
-class Command(metaclass=abc.ABCMeta):
-    """Abstract Command implemented by all different kinds of compilations and reporting command."""
+class Project(metaclass=abc.ABCMeta):
+    """Abstract Project implemented by all different kinds projects requiring compilation and reporting."""
 
     def __init__(self, project_root):
         """Sets the project root."""
         self._project_root = pathlib.Path(project_root)
 
     def execute(self):
-        """Execute the command. This includes compilation and reporting."""
+        """Execute the project. This includes compilation and reporting."""
         self.compile_()
-        try:
-            self.run_securify()
-        except subprocess.CalledProcessError:
-            utils.print_error("Error running securify")
-            sys.exit(1)
+        self.run_securify()
         self.report()
 
     def get_project_root(self):
@@ -48,10 +44,12 @@ class Command(metaclass=abc.ABCMeta):
 
     def run_securify(self):
         """Runs the securify command."""
-        cmd = ["java", "-Xmx4G", "-jar", "/securify_jar/securify.jar", "-co", self.get_compilation_output(),
+        cmd = ["java", "-Xmx8G", "-jar", "/securify_jar/securify.jar", "-co", self.get_compilation_output(),
                "-o", self.get_securify_target_output()]
         process = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE)
-        process.check_returncode()
+        if process.returncode:
+            utils.log_error("Error running securify.")
+            utils.handle_process_output_and_exit(process)
 
     def get_compilation_output(self):
         """Returns the hex source resulting from the compilation."""
