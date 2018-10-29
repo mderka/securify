@@ -22,6 +22,7 @@ import sys
 import abc
 import pathlib
 import subprocess
+import logging
 
 from . import utils
 
@@ -34,8 +35,11 @@ class Project(metaclass=abc.ABCMeta):
 
     def execute(self):
         """Execute the project. This includes compilation and reporting."""
+        logging.info("Compiling project")
         self.compile_()
+        logging.info("Running Securify")
         self.run_securify()
+        logging.info("Generating report")
         self.report()
 
     def get_project_root(self):

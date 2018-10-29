@@ -110,14 +110,14 @@ def log_confirmation(text):
 
 
 def set_logger_level(level=None):
-    if "info":
-        level = logging.INFO
-    elif "error":
-        level = logging.ERROR
+    if level == "info":
+        log_level = logging.INFO
+    elif level == "error":
+        log_level = logging.ERROR
     else:
-        level = logging.WARNING
+        log_level = logging.WARNING
 
-    config = { "format": "%(message)s", "level": level}
+    config = { "format": "%(message)s", "level": log_level}
     logging.basicConfig(**config)
 
 

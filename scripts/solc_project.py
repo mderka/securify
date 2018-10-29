@@ -22,6 +22,7 @@ import os
 import sys
 from pathlib import Path
 import json
+import subprocess
 
 from solc import install_solc
 from solc.main import _parse_compiler_output
@@ -64,7 +65,12 @@ class SolcProject(project.Project):
         """Returns the binary for some version of solc."""
         binary = os.path.join(Path.home(), f'.py-solc/solc-v{version}/bin/solc')
         if not os.path.exists(binary):
-            install_solc(f'v{version}', platform='linux')
+            # install in seperate process to control stdout
+            cmd = ["python3", "-c", f"from solc import install_solc\ninstall_solc('v{version}', platform='linux')"]
+            process = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE)
+            if process.returncode:
+                utils.log_error("Error installing required solidity compiler.")
+                utils.handle_process_output_and_exit(process)
         return binary
 
     def _compile_solfiles(self, files, solc_version=None, output_values=utils.OUTPUT_VALUES):
